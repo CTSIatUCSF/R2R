@@ -1,16 +1,16 @@
 package edu.ucsf.ctsi.r2r.jena;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.util.logging.Logger;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
 
-public class LODModelService implements ModelService {
+public class LODService implements ModelService, RDFXMLService, ResourceService {
 
-	private static final Logger LOG = Logger.getLogger(LODModelService.class.getName());
+	private static final Logger LOG = Logger.getLogger(LODService.class.getName());
 	
 	private String systemDomain;
 	private String systemBase;
@@ -19,18 +19,26 @@ public class LODModelService implements ModelService {
 	private boolean showDetails = true;
 	private boolean expand = false;
 	
-	@Inject
-	public LODModelService(@Named("orng.systemDomain") String systemDomain,
-						  String sessionId, String viewerId) {
+	public LODService(String systemDomain, String sessionId, String viewerId, boolean showDetails, boolean expand) {
 		this.systemDomain = systemDomain;
 		this.systemBase = systemDomain + "/profile/";
 		this.sessionId = sessionId;
 		this.viewerId = viewerId;
-	}
-
-	public void setProfilesOptions(boolean showDetails, boolean expand) {
 		this.showDetails = showDetails;
 		this.expand = expand;
+	}
+	
+	public LODService() {
+		this("", null, null, true, false);
+	}
+	
+	public byte[] getRDFXML(String uri) throws Exception {
+		Model model = getModel(uri);
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		model.write(stream);
+		stream.flush();
+		stream.close();
+		return stream.toByteArray();
 	}
 	
 	public Model getModel(String uri) throws Exception {	
@@ -58,6 +66,10 @@ public class LODModelService implements ModelService {
 			return Integer.parseInt(uri.split(systemBase)[1]);
 		}
 		return null;
+	}
+
+	public Resource getResource(String uri) throws Exception {
+		return getModel(uri).createResource(uri);
 	}
 
 }

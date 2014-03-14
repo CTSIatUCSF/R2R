@@ -11,12 +11,13 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.ucsf.ctsi.r2r.DBUtil;
 
-public class DbModelService implements ModelService, RDFXMLService {
+public class DbService implements ModelService, RDFXMLService, ResourceService {
 
-	private static final Logger LOG = Logger.getLogger(DbModelService.class.getName());
+	private static final Logger LOG = Logger.getLogger(DbService.class.getName());
 	
 	private String orngUser;
 	private String systemBase;
@@ -25,7 +26,7 @@ public class DbModelService implements ModelService, RDFXMLService {
 	private boolean expand = false;
 	
 	@Inject
-	public DbModelService(@Named("orng.systemDomain") String systemDomain,  @Named("orng.user") String orngUser, DBUtil dbUtil) {
+	public DbService(@Named("orng.systemDomain") String systemDomain,  @Named("orng.user") String orngUser, DBUtil dbUtil) {
 		this.systemBase = systemDomain + "/profile/";
 		this.orngUser = orngUser;
 		// set up the cache
@@ -129,6 +130,10 @@ public class DbModelService implements ModelService, RDFXMLService {
             model.read(sx.getCharacterStream(), null);
         }
     	LOG.info("Just read " + nodeId + " from the database");	        	
+	}
+
+	public Resource getResource(String uri) throws Exception {
+		return getModel(uri).createResource(uri);
 	}
 	
 }

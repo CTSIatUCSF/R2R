@@ -16,6 +16,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
+@Deprecated
 public class TDBCacheResourceService implements ResourceService {
 
 	private static final Logger LOG = Logger.getLogger(TDBCacheResourceService.class.getName());
