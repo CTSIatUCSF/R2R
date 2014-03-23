@@ -40,7 +40,8 @@ public class R2ROntology implements R2RConstants {
 		ab.addRange( m.getOntClass( NS + "ColloaboartiveWork" ) );		
 		
 		DatatypeProperty ts = m.createDatatypeProperty( ADDED_TO_CACHE );
-		ts.addDomain( foaf.getOntClass( "http://xmlns.com/foaf/0.1/Person" ) );
+		// allow anything to be added
+		//ts.addDomain( foaf.getOntClass( "http://xmlns.com/foaf/0.1/Person" ) );
 		ts.addRange( XSD.xlong );			
 
 		return m;
