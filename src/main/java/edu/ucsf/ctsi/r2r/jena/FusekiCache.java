@@ -63,8 +63,8 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	}
 
 	public boolean contains(String uri) {
-		Model model = fusekiService.get(uri);
-		return model.contains(ResourceFactory.createResource(uri), null);		
+		String query = "ASK {<" + uri + "> <" + TIMESTAMP + "> ?o}";
+		return fusekiService.ask(query);
 	}
 	
 	private Integer getCacheExpireHours(Resource resource) {
@@ -109,6 +109,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		return resourceExpired;
 	}
 
+	// see if sparql ASK will work better
 	private boolean hasExpired(String uri) {
 		ExpiredResultSetConsumer consumer = new ExpiredResultSetConsumer();
 		fusekiService.select(String.format(EXPIRED_TEMPLATE, uri, uri), consumer);
@@ -123,7 +124,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			return body;
 		}
 		else {
-			return fusekiService.get(uri);
+			return fusekiService.describe(uri);
 		}
 	}
 
@@ -197,29 +198,27 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		return model != null ? model.createResource(uri) : null;
 	}	
 	
-	public Map<String, String> getFields(String uri, Set<String> fields) throws Exception {
-		return getFields(uri, uri, fields);
+	public Model getModel(String uri, Set<String> fields) throws Exception {
+		return getModel(uri, uri, fields);
 	}
 	
-	public Map<String, String> getFields(String rdfUrl, String uri, Set<String> fields) throws Exception {
+	public Model getModel(String rdfUrl, String uri, Set<String> fields) throws Exception {
 		if (fields.size() == 0) {
 			return null;
 		}
 		ensureFreshItem(rdfUrl, uri);
-		String select = "SELECT";
-		String where = " WHERE {";
+		String select = "CONSTRUCT { ";
+		String where = "} WHERE { ";
 		int cnt = 0;
 		Map<String, String> varNameMap = new HashMap<String, String>();
 		for (String field : fields) {
 			String var = "o" + cnt++;
-			select += " ?" + var;
-			where += "OPTIONAL {<" + uri + "> <" + field + "> ?" + var + "} "; 			
+			String substring = "<" + uri + "> <" + field + "> ?" + var + ". ";
+			select += substring;
+			where += "OPTIONAL {" + substring + "} "; 			
 			varNameMap.put(var, field);
 		}
-		
-		SelectResultSetConsumer consumer = new SelectResultSetConsumer(varNameMap);
-		fusekiService.select(select + where + "}", consumer);
-		return consumer.getData();
+		return fusekiService.construct(select + where + "}");
 	}
 	
 	public static void main(String[] args) {
@@ -234,11 +233,8 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			fields.add("http://ucsf.edu/ontology/R2R#addedToCacheOn");
 			fields.add("http://www.w3.org/2000/01/rdf-schema#label");
 			fields.add("http://www.w3.org/2000/01/rdf-schema#foo");
-			Map<String, String> values =fc.getFields("http://stage-profiles.ucsf.edu/profiles200/profile/365069", fields);
-			for (String n : values.keySet()) {
-				System.out.println(n + ":" + values.get(n));
-			}
-			
+			Model model = fc.getModel("http://stage-profiles.ucsf.edu/profiles200/profile/365069", fields);
+			model.write(System.out);
 		}
 		catch (Exception e) {
 			e.printStackTrace();

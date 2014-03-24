@@ -23,17 +23,31 @@ public abstract class FusekiService {
 		this.fusekiQuery = fusekiURL + "/query";
 	}
 
-	public Model get(String uri) {
+	public Model describe(String uri) {
 		QueryExecution qe = QueryExecutionFactory.sparqlService(fusekiQuery, "DESCRIBE <" + uri + ">");
 		Model model = qe.execDescribe();
 		qe.close();
 		return model;
 	}
 	
+	public boolean ask(String sparql) {
+		QueryExecution qe = QueryExecutionFactory.sparqlService(fusekiQuery, sparql);
+		boolean retval = qe.execAsk();
+		qe.close();
+		return retval;
+	}
+	
 	public void select(String sparql, ResultSetConsumer consumer) {
 		QueryExecution qe = QueryExecutionFactory.sparqlService(fusekiQuery, sparql);
 		consumer.useResultSet(qe.execSelect());
 		qe.close();
+	}
+
+	public Model construct(String sparql) {
+		QueryExecution qe = QueryExecutionFactory.sparqlService(fusekiQuery, sparql);
+		Model model = qe.execConstruct();
+		qe.close();
+		return model;
 	}
 
 	public int add(Model model) throws Exception {
