@@ -14,16 +14,16 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 // put content headers in FusekiService and make that an abstract class
-public class HttpClientFusekiService extends FusekiService {
+public class FusekiHttpClient extends FusekiClient {
 
-	private static final Logger LOG = Logger.getLogger(HttpClientFusekiService.class.getName());
+	private static final Logger LOG = Logger.getLogger(FusekiHttpClient.class.getName());
 	
 	private String fusekiPost = "http://localhost:3030/ds/data?default";
 	private String fusekiUpdate = "http://localhost:3030/ds/update";
 	
 	
 	@Inject
-	public HttpClientFusekiService(@Named("r2r.fuseki") String fusekiURL) {
+	public FusekiHttpClient(@Named("r2r.fuseki") String fusekiURL) {
 		super(fusekiURL);
 		this.fusekiPost = fusekiURL + "/data?default";
 		this.fusekiUpdate = fusekiURL + "/update";

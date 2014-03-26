@@ -11,7 +11,7 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 
 // make this an interface that can work without httpfetcher
-public abstract class FusekiService {
+public abstract class FusekiClient {
 	
 	protected static final String UPDATE_CONTENT_TYPE = "application/sparql-update";
 	protected static final String ADD_CONTENT_TYPE = "application/rdf+xml";
@@ -19,7 +19,7 @@ public abstract class FusekiService {
 	private String fusekiQuery = "http://localhost:3030/ds/query";
 
 	@Inject
-	public FusekiService(@Named("r2r.fuseki") String fusekiURL) {
+	public FusekiClient(@Named("r2r.fuseki") String fusekiURL) {
 		this.fusekiQuery = fusekiURL + "/query";
 	}
 
