@@ -24,13 +24,21 @@ public class DbService implements ModelService, RDFXMLService, ResourceService {
 	private DBUtil dbUtil;
 	private boolean showDetails = true;
 	private boolean expand = false;
+	private String sessionId;
 	
 	@Inject
-	public DbService(@Named("orng.systemDomain") String systemDomain,  @Named("orng.user") String orngUser, DBUtil dbUtil) {
+	public DbService(@Named("orng.systemDomain") String systemDomain,  @Named("orng.user") String orngUser, DBUtil dbUtil) throws SQLException {
 		this.systemBase = systemDomain + "/profile/";
 		this.orngUser = orngUser;
 		// set up the cache
     	this.dbUtil = dbUtil;    	
+		Connection conn = dbUtil.getConnection();        
+		try {
+			sessionId = getSessionId(conn);
+		}
+		finally {
+			conn.close();
+		}
 	}
 	
 	// inject someday
@@ -47,7 +55,7 @@ public class DbService implements ModelService, RDFXMLService, ResourceService {
 		Model model = ModelFactory.createDefaultModel();
 		Connection conn = dbUtil.getConnection();        
 		try {
-			loadIntoModel(model, getSessionId(conn), conn, nodeId, showDetails, expand);
+			loadIntoModel(model, sessionId, conn, nodeId, showDetails, expand);
 		}
 		finally {
 			conn.close();
@@ -62,7 +70,7 @@ public class DbService implements ModelService, RDFXMLService, ResourceService {
 		}
 		Connection conn = dbUtil.getConnection();        
 		try {
-			return getRDFXML(getSessionId(conn), conn, nodeId, showDetails, expand);
+			return getRDFXML(sessionId, conn, nodeId, showDetails, expand);
 		}
 		finally {
 			conn.close();
