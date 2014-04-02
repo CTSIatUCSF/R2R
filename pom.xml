@@ -34,6 +34,11 @@
 		<artifactId>jdbc4</artifactId>
 		<version>3.0</version>
 	</dependency>
+  	<dependency>
+  		<groupId>org.json</groupId>
+  		<artifactId>json</artifactId>
+  		<version>20070829</version>
+  	</dependency>
 	<dependency>
 		<groupId>joda-time</groupId>
 		<artifactId>joda-time</artifactId>
@@ -42,6 +47,11 @@
 	<dependency>
 		<groupId>com.github.jsonld-java</groupId>
 		<artifactId>jsonld-java</artifactId>
+		<version>${jsonld.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>com.github.jsonld-java</groupId>
+		<artifactId>jsonld-java-jena</artifactId>
 		<version>${jsonld.version}</version>
 	</dependency>
 	<dependency>

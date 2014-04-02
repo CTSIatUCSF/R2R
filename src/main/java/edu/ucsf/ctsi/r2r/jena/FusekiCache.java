@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -20,11 +19,8 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.ucsf.ctsi.r2r.jena.ResourceService;
 import edu.ucsf.ctsi.r2r.jena.RDFXMLService;
@@ -32,6 +28,7 @@ import edu.ucsf.ctsi.r2r.jena.RDFXMLService;
 // put this in r2r jar to be shared with Crosslinks, add something about storing it or not
 public class FusekiCache implements ModelService, RDFXMLService, ResourceService {
 
+	private static final String DEFAULT = "DEFAULT";
 	private static final String TIMESTAMP = "http://ucsf.edu/ontology/R2R#addedToCacheOn";
 	private static final String TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 	private static final Logger LOG = Logger.getLogger(FusekiCache.class.getName());
@@ -41,6 +38,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private FusekiClient fusekiService;
 	private RDFXMLService rdfxmlService;
 	private Map<String, Integer> expirationHours = new HashMap<String, Integer>();
+	private final Integer defaultExpirationHours;
 		
 	@Inject
 	public FusekiCache(FusekiClient fusekiService, RDFXMLService rdfxmlService) throws IOException {		
@@ -52,14 +50,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		for (Object key : prop.keySet())  {
 			expirationHours.put(key.toString(), Integer.parseInt(prop.getProperty(key.toString())));
 		}
-	}
-
-	private Property createTimestamp(Model model) {
-		return  model.createProperty(TIMESTAMP);
-	}
-	
-	private Property createType(Model model) {
-		return  model.createProperty(TYPE);
+		defaultExpirationHours = prop.containsKey(DEFAULT) ? Integer.parseInt(prop.getProperty(DEFAULT)) : null;
 	}
 
 	public boolean contains(String uri) {
@@ -67,35 +58,11 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		return fusekiService.ask(query);
 	}
 	
-	private Integer getCacheExpireHours(Resource resource) {
-		Property typeProperty = createType(resource.getModel());
-		StmtIterator types = resource.listProperties(typeProperty);
-		while (types.hasNext()) {
-			String type = types.next().getObject().toString();
-			if (expirationHours.containsKey(type)) {
-				return expirationHours.get(type);
-			}
-		}
-		return null;
-	}
-	
 	private Integer getCacheExpireHours(String type) {
 		if (expirationHours.containsKey(type)) {
 			return expirationHours.get(type);
 		}
-		return null;
-	}
-	
-	private boolean hasExpired(Resource resource) {
-		Integer expireHours = getCacheExpireHours(resource);
-		// if it does not have an expiration date, grab a fresh one
-        boolean resourceExpired = true;
-		if (expireHours != null && resource.hasProperty(createTimestamp(resource.getModel())) ) {
-			Literal writeTime = resource.getProperty(createTimestamp(resource.getModel())).getLiteral();
-			DateTime expiresOn = new DateTime(writeTime.getLong()).plus(expireHours);
-			resourceExpired = expiresOn.isBeforeNow();
-		}
-		return resourceExpired;
+		return defaultExpirationHours;
 	}
 	
 	private boolean hasExpired(Literal writeTime, String type) {
@@ -262,28 +229,4 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		}		
 	}
 
-	private class SelectResultSetConsumer implements ResultSetConsumer {
-		private Map<String, String> data = new HashMap<String, String>();
-		private Map<String, String> varNameMap;
-		
-		public SelectResultSetConsumer(Map<String, String> varNameMap) {
-			this.varNameMap = varNameMap;
-		}
-		
-		public void useResultSet(ResultSet rs) {
-			if (rs.hasNext()) {
-				QuerySolution qs = rs.next();
-				Iterator<String> varNames = qs.varNames();
-				while (varNames.hasNext()) {
-					String var = varNames.next();
-					RDFNode n = qs.get(var);
-					data.put(varNameMap.get(var), n.toString());
-				}
-			}
-		}	
-		
-		public Map<String, String> getData() {
-			return data;
-		}		
-	}
 }
