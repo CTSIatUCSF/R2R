@@ -14,6 +14,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.ucsf.ctsi.r2r.DBUtil;
+import edu.ucsf.ctsi.r2r.R2ROntology;
 
 public class DbService implements ModelService, RDFXMLService, ResourceService {
 
@@ -52,7 +53,7 @@ public class DbService implements ModelService, RDFXMLService, ResourceService {
 		if (nodeId == null) {
 			return null;
 		}
-		Model model = ModelFactory.createDefaultModel();
+		Model model = R2ROntology.createDefaultModel();
 		Connection conn = dbUtil.getConnection();        
 		try {
 			loadIntoModel(model, sessionId, conn, nodeId, showDetails, expand);

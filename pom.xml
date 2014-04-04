@@ -62,13 +62,8 @@
 	</dependency>
 	<dependency>
 		<groupId>org.apache.httpcomponents</groupId>
-		<artifactId>fluent-hc</artifactId>
-		<version>4.3.3</version>
-	</dependency>
-	<dependency>
-		<groupId>org.apache.httpcomponents</groupId>
 		<artifactId>httpclient</artifactId>
-		<version>4.3.3</version>
+		<version>4.2.5</version>
 	</dependency>
   </dependencies>
 </project>

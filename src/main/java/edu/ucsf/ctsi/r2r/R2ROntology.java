@@ -5,8 +5,11 @@ import java.io.IOException;
 
 import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.ObjectProperty;
+import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.OntProperty;
 import com.hp.hpl.jena.ontology.Ontology;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.vocabulary.XSD;
 
@@ -19,51 +22,74 @@ public class R2ROntology implements R2RConstants {
 		foaf = ModelFactory.createOntologyModel();
 		foaf.read("http://xmlns.com/foaf/spec/", "RDF/XML");
 	}
-			
+	
+	public static Model createDefaultModel() {
+		Model model = ModelFactory.createDefaultModel();
+		addNS(model);
+		return model;
+	}
+	
+	public static void addNS(Model model) {
+		model.setNsPrefix(RDF_PREFIX, RDF);
+		model.setNsPrefix(RDFS_PREFIX, RDFS);
+		model.setNsPrefix(BIBO_PREFIX, BIBO);
+		model.setNsPrefix(FOAF_PREFIX, FOAF);
+		model.setNsPrefix(VIVO_PREFIX, VIVO);
+		model.setNsPrefix(PRNS_PREFIX, PRNS);
+		model.setNsPrefix(R2R_PREFIX, R2R);
+	}
+	
 	public OntModel getR2ROntModel() {
 		OntModel m = ModelFactory.createOntologyModel();
+		addNS(m);
 
-    	m.setNsPrefix(FOAF_PREFIX, FOAF);
-    	m.setNsPrefix(VIVO_PREFIX, VIVO);
-    	m.setNsPrefix(PRNS_PREFIX, PRNS);
-    	m.setNsPrefix(R2R_PREFIX, R2R);
-		
-		DatatypeProperty ts = m.createDatatypeProperty( ADDED_TO_CACHE );
-		// allow anything to be added
-		//ts.addDomain( foaf.getOntClass( "http://xmlns.com/foaf/0.1/Person" ) );
-		ts.addRange( XSD.xlong );			
-
-		//m.read("http://xmlns.com/foaf/spec/", "RDF/XML");
 		Ontology ont = m.createOntology( R2R );
-		ont.addImport( m.createResource( "http://xmlns.com/foaf/0.1/" ) );
-		m.createClass(R2R + "Affiliation");
-		m.createClass(R2R + "ColloaboartiveWork");
-	
-		DatatypeProperty pmid = m.createDatatypeProperty( R2R + "PMID" );
-		pmid.addDomain( m.getOntClass( R2R + "ColloaboartiveWork" ) );
-		pmid.addRange( XSD.xint );			
-
-		DatatypeProperty pmcid = m.createDatatypeProperty( R2R + "PMCID" );
-		pmcid.addDomain( m.getOntClass( R2R + "ColloaboartiveWork" ) );
-		pmcid.addRange( XSD.xint );			
-		
-		DatatypeProperty doi = m.createDatatypeProperty( R2R + "doi" );
-		doi.addDomain( m.getOntClass( R2R + "ColloaboartiveWork" ) );
-		doi.addRange( XSD.xstring );	
+		ont.addImport( m.createResource( FOAF ) );
+		OntClass person = foaf.getOntClass( FOAF_PERSON );
+		OntClass affiliation = m.createClass(R2R_RN_WEBSITE);
 				
-		// FOAF extensions
-		ObjectProperty aff = m.createObjectProperty( R2R + "affiliation" );
-		aff.addDomain( foaf.getOntClass( "http://xmlns.com/foaf/0.1/Person" ) );
-		aff.addRange( m.getOntClass( R2R + "Affiliation" ) );		
+		// anything can have this
+		OntProperty ts = m.createOntProperty( R2R_ADDED_TO_CACHE );
+		ts.addRange( XSD.xlong );
+		m.createMaxCardinalityRestriction(null, ts, 1);
 
-		ObjectProperty ab = m.createObjectProperty( R2R + "collaboratedOn" );
-		ab.addDomain( foaf.getOntClass( "http://xmlns.com/foaf/0.1/Person" ) );
-		ab.addRange( m.getOntClass( R2R + "ColloaboartiveWork" ) );		
-		
-		DatatypeProperty thumbnail = m.createDatatypeProperty( THUMBNAIL );
-		thumbnail.addDomain( foaf.getOntClass( "http://xmlns.com/foaf/0.1/Person" ) );
+		// Affiliation properties
+		DatatypeProperty cst = m.createDatatypeProperty( R2R_CRAWL_START_DT );
+		cst.addDomain( affiliation );
+		cst.addRange( XSD.xlong );			
+		m.createMaxCardinalityRestriction(null, cst, 1);
+				
+		DatatypeProperty cet = m.createDatatypeProperty( R2R_CRAWL_END_DT );
+		cet.addDomain( affiliation );
+		cet.addRange( XSD.xlong );			
+		m.createMaxCardinalityRestriction(null, cet, 1);
+
+		// Person properties
+		ObjectProperty aff = m.createObjectProperty( R2R_FROM_RN_WEBSITE );
+		aff.addDomain( person );
+		aff.addRange( affiliation );		
+		m.createMaxCardinalityRestriction(null, aff, 1);
+
+		// when did we last see this person?
+		DatatypeProperty rv = m.createDatatypeProperty( R2R_VERIFIED_DT );
+		rv.addDomain( person );
+		rv.addRange( XSD.xlong );			
+		m.createMaxCardinalityRestriction(null, rv, 1);
+
+		// when did we last see this persons work?
+		DatatypeProperty wv = m.createDatatypeProperty( R2R_WORK_VERIFIED_DT );
+		wv.addDomain( person );
+		wv.addRange( XSD.xlong );			
+		m.createMaxCardinalityRestriction(null, wv, 1);
+	
+		DatatypeProperty thumbnail = m.createDatatypeProperty( R2R_THUMBNAIL );
+		thumbnail.addDomain( person );
 		thumbnail.addRange( XSD.anyURI);	
+		m.createMaxCardinalityRestriction(null, thumbnail, 1);
 
+		ObjectProperty ab = m.createObjectProperty( R2R_CONTRIBUTED_TO );
+		ab.addDomain( person );
+				
 		return m;
 	}
 	

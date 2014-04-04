@@ -22,18 +22,18 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.ucsf.ctsi.r2r.R2RConstants;
+import edu.ucsf.ctsi.r2r.R2ROntology;
 import edu.ucsf.ctsi.r2r.jena.ResourceService;
 import edu.ucsf.ctsi.r2r.jena.RDFXMLService;
 
 // put this in r2r jar to be shared with Crosslinks, add something about storing it or not
-public class FusekiCache implements ModelService, RDFXMLService, ResourceService {
+public class FusekiCache implements ModelService, RDFXMLService, ResourceService, R2RConstants {
 
 	private static final String DEFAULT = "DEFAULT";
-	private static final String TIMESTAMP = "http://ucsf.edu/ontology/R2R#addedToCacheOn";
-	private static final String TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 	private static final Logger LOG = Logger.getLogger(FusekiCache.class.getName());
 	
-	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + TIMESTAMP + "> ?ac. <%s> <" + TYPE + "> ?ts.}";
+	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts.}";
 	
 	private FusekiClient fusekiService;
 	private RDFXMLService rdfxmlService;
@@ -54,7 +54,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	}
 
 	public boolean contains(String uri) {
-		String query = "ASK {<" + uri + "> <" + TIMESTAMP + "> ?o}";
+		String query = "ASK {<" + uri + "> <" + R2R_ADDED_TO_CACHE + "> ?o}";
 		return fusekiService.ask(query);
 	}
 	
@@ -99,7 +99,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private byte[] ensureFreshItem(String rdfUrl, String uri) throws Exception {
 		if (hasExpired(uri)) {
 			// we might be asking fuseki to remove something it doesn't have, but this is fast so that is OK 
-			fusekiService.delete(uri);
+			fusekiService.deleteSubject(uri);
         	LOG.info("Expired " + uri);
     		try {
     			// if we get here, we need to add to cache
@@ -117,7 +117,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		if (body != null) {
 			fusekiService.add(body);
 			// now add the timestamp
-			fusekiService.update("INSERT DATA { <" + uri + "> <" + TIMESTAMP + "> " + new DateTime().getMillis() + ".}");
+			fusekiService.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> " + new DateTime().getMillis() + ".}");
 		}
 		return body;		
 	}
@@ -151,7 +151,8 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			return (Model)obj;
 		}
 		else if (obj instanceof byte[]) {
-			return ModelFactory.createDefaultModel().read(new ByteArrayInputStream((byte[])obj), null);
+			// this should already have all the namespaces in it
+			return R2ROntology.createDefaultModel().read(new ByteArrayInputStream((byte[])obj), null);
 		}
 		return null;
 	}
@@ -180,7 +181,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		Map<String, String> varNameMap = new HashMap<String, String>();
 		for (String field : fields) {
 			String var = "o" + cnt++;
-			String substring = "<" + uri + "> <" + field + "> ?" + var + ". ";
+			String substring = "<" + uri + "> <" + field + "> ?" + var + " . ";
 			select += substring;
 			where += "OPTIONAL {" + substring + "} "; 			
 			varNameMap.put(var, field);

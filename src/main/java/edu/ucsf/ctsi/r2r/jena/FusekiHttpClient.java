@@ -8,7 +8,7 @@ import org.apache.http.client.HttpClient;
 
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -29,7 +29,7 @@ public class FusekiHttpClient extends FusekiClient {
 		this.fusekiUpdate = fusekiURL + "/update";
 	}
 			
-	public int delete(String uri) throws Exception {
+	public int deleteSubject(String uri) throws Exception {
 		return post(fusekiUpdate, UPDATE_CONTENT_TYPE, ("DELETE WHERE { <" + uri + ">  ?p ?o }").getBytes());
 	}
 
@@ -42,7 +42,8 @@ public class FusekiHttpClient extends FusekiClient {
 	}
 	
 	private int post(String url, String contentType, byte[] body) throws Exception {
-		HttpClient httpclient = HttpClientBuilder.create().build();
+		// HttpClient httpclient = HttpClientBuilder.create().build(); this works with httpclient 4.3.3, but not 4.2.5
+		HttpClient httpclient = new DefaultHttpClient();
 		HttpPost httpost = new HttpPost(url);
 		httpost.addHeader("content-type", contentType);
 		httpost.setEntity(new ByteArrayEntity(body));

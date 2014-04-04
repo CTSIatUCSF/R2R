@@ -58,7 +58,9 @@ public abstract class FusekiClient {
 		return add(stream.toByteArray());
 	}
 	
-	public abstract int delete(String uri) throws Exception;
+	// this will only delete the URI as a subject!
+	
+	public abstract int deleteSubject(String uri) throws Exception;
 
 	public abstract int add(byte[] body) throws Exception;
 
