@@ -21,7 +21,6 @@ public class FusekiHttpClient extends FusekiClient {
 	private String fusekiPost = "http://localhost:3030/ds/data?default";
 	private String fusekiUpdate = "http://localhost:3030/ds/update";
 	
-	
 	@Inject
 	public FusekiHttpClient(@Named("r2r.fuseki") String fusekiURL) {
 		super(fusekiURL);

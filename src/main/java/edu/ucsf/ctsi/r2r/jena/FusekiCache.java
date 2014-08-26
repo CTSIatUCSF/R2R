@@ -35,14 +35,14 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	
 	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts.}";
 	
-	private FusekiClient fusekiService;
+	private FusekiClient fusekiClient;
 	private RDFXMLService rdfxmlService;
 	private Map<String, Integer> expirationHours = new HashMap<String, Integer>();
 	private final Integer defaultExpirationHours;
 		
 	@Inject
-	public FusekiCache(FusekiClient fusekiService, RDFXMLService rdfxmlService) throws IOException {		
-		this.fusekiService = fusekiService;
+	public FusekiCache(FusekiClient fusekiClient, RDFXMLService rdfxmlService) throws IOException {		
+		this.fusekiClient = fusekiClient;
 		this.rdfxmlService = rdfxmlService;
 		
 		Properties prop = new Properties();
@@ -55,7 +55,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 
 	public boolean contains(String uri) {
 		String query = "ASK {<" + uri + "> <" + R2R_ADDED_TO_CACHE + "> ?o}";
-		return fusekiService.ask(query);
+		return fusekiClient.ask(query);
 	}
 	
 	private Integer getCacheExpireHours(String type) {
@@ -79,7 +79,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	// see if sparql ASK will work better
 	private boolean hasExpired(String uri) {
 		ExpiredResultSetConsumer consumer = new ExpiredResultSetConsumer();
-		fusekiService.select(String.format(EXPIRED_TEMPLATE, uri, uri), consumer);
+		fusekiClient.select(String.format(EXPIRED_TEMPLATE, uri, uri), consumer);
 		return consumer.getHasExpired();
 	}
 
@@ -91,7 +91,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			return body;
 		}
 		else {
-			return fusekiService.describe(uri);
+			return fusekiClient.describe(uri);
 		}
 	}
 
@@ -99,7 +99,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private byte[] ensureFreshItem(String rdfUrl, String uri) throws Exception {
 		if (hasExpired(uri)) {
 			// we might be asking fuseki to remove something it doesn't have, but this is fast so that is OK 
-			fusekiService.deleteSubject(uri);
+			fusekiClient.deleteSubject(uri);
         	LOG.info("Expired " + uri);
     		try {
     			// if we get here, we need to add to cache
@@ -115,9 +115,9 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private byte[] addToCache(String rdfUrl, String uri) throws Exception {
 		byte[] body = rdfxmlService.getRDFXML(rdfUrl);
 		if (body != null) {
-			fusekiService.add(body);
+			fusekiClient.add(body);
 			// now add the timestamp
-			fusekiService.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> " + new DateTime().getMillis() + ".}");
+			fusekiClient.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> " + new DateTime().getMillis() + ".}");
 		}
 		return body;		
 	}
@@ -186,7 +186,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			where += "OPTIONAL {" + substring + "} "; 			
 			varNameMap.put(var, field);
 		}
-		return fusekiService.construct(select + where + "}");
+		return fusekiClient.construct(select + where + "}");
 	}
 	
 	public static void main(String[] args) {

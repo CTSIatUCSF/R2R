@@ -13,7 +13,6 @@ public interface R2RConstants {
 	static final String FOAF_PREFIX = "foaf";
 	static final String FOAF = "http://xmlns.com/foaf/0.1/";
 	static final String FOAF_PERSON = FOAF + "Person";			
-	static final String FOAF_HOMEPAGE = FOAF + "homepage";		
 	
 	static final String BIBO_PREFIX = "bibo"; 
 	static final String BIBO = "http://purl.org/ontology/bibo/";
@@ -40,6 +39,7 @@ public interface R2RConstants {
 	// properties
 	static final String R2R_ADDED_TO_CACHE = R2R + "addedToCacheOn";
 	static final String R2R_THUMBNAIL = R2R + "thumbnail";
+	static final String R2R_HOMEPAGE_PATH = R2R + "homePagePath";
 	static final String R2R_CRAWL_START_DT = R2R + "crawlStartDT";	
 	static final String R2R_CRAWL_END_DT = R2R + "crawlEndDT";	
 	static final String R2R_FROM_RN_WEBSITE = R2R + "fromRNWebSite";	
