@@ -35,13 +35,13 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	
 	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts.}";
 	
-	private FusekiClient fusekiClient;
+	private SparqlPostClient fusekiClient;
 	private RDFXMLService rdfxmlService;
 	private Map<String, Integer> expirationHours = new HashMap<String, Integer>();
 	private final Integer defaultExpirationHours;
 		
 	@Inject
-	public FusekiCache(FusekiClient fusekiClient, RDFXMLService rdfxmlService) throws IOException {		
+	public FusekiCache(SparqlPostClient fusekiClient, RDFXMLService rdfxmlService) throws IOException {		
 		this.fusekiClient = fusekiClient;
 		this.rdfxmlService = rdfxmlService;
 		
@@ -192,7 +192,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	public static void main(String[] args) {
 		try  {								
 			// get these first
-			FusekiClient fs = new FusekiHttpClient("http://localhost:3030/profiles");
+			SparqlPostClient fs = new SparqlHttpClient("http://localhost:3030/profiles");
 			FusekiCache fc = new FusekiCache(fs, null);
 			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/366860");
 			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/123");

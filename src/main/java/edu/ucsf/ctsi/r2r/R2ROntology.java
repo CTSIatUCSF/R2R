@@ -13,14 +13,10 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.vocabulary.XSD;
 
+
 public class R2ROntology implements R2RConstants {
-	
-	OntModel foaf;
-	
+		
 	public R2ROntology() {
-		// read in foaf
-		foaf = ModelFactory.createOntologyModel();
-		foaf.read("http://xmlns.com/foaf/spec/", "RDF/XML");
 	}
 	
 	public static Model createDefaultModel() {
@@ -30,67 +26,89 @@ public class R2ROntology implements R2RConstants {
 	}
 	
 	public static void addNS(Model model) {
+		model.setNsPrefix("xsd", "http://www.w3.org/2001/XMLSchema#");
 		model.setNsPrefix(RDF_PREFIX, RDF);
 		model.setNsPrefix(RDFS_PREFIX, RDFS);
 		model.setNsPrefix(BIBO_PREFIX, BIBO);
 		model.setNsPrefix(FOAF_PREFIX, FOAF);
+		model.setNsPrefix(R2R_PREFIX, R2R);
 		model.setNsPrefix(VIVO_PREFIX, VIVO);
 		model.setNsPrefix(PRNS_PREFIX, PRNS);
-		model.setNsPrefix(R2R_PREFIX, R2R);
 	}
 	
 	public OntModel getR2ROntModel() {
-		OntModel m = ModelFactory.createOntologyModel();
-		addNS(m);
+		OntModel ontModel = ModelFactory.createOntologyModel();
+		addNS(ontModel);
+		ontModel.read("http://xmlns.com/foaf/spec/", "RDF/XML");
+		//ontModel.read("http://vivoweb.org/files/vivo-isf-public-1.6.owl", "RDF/XML");
 
-		Ontology ont = m.createOntology( R2R );
-		ont.addImport( m.createResource( FOAF ) );
-		OntClass person = foaf.getOntClass( FOAF_PERSON );
-		OntClass affiliation = m.createClass(R2R_RN_WEBSITE);
+		OntClass person = ontModel.createClass( FOAF_PERSON );
+		OntClass affiliation = ontModel.createClass(R2R_AFFILIATION);
 				
 		// anything can have this
-		OntProperty ts = m.createOntProperty( R2R_ADDED_TO_CACHE );
+		OntProperty ts = ontModel.createOntProperty( R2R_ADDED_TO_CACHE );
 		ts.addRange( XSD.xlong );
-		m.createMaxCardinalityRestriction(null, ts, 1);
+		ontModel.createMaxCardinalityRestriction(null, ts, 1);
 
 		// Affiliation properties
-		DatatypeProperty cst = m.createDatatypeProperty( R2R_CRAWL_START_DT );
+		DatatypeProperty cst = ontModel.createDatatypeProperty( R2R_CRAWL_START_DT );
 		cst.addDomain( affiliation );
 		cst.addRange( XSD.xlong );			
-		m.createMaxCardinalityRestriction(null, cst, 1);
+		ontModel.createMaxCardinalityRestriction(null, cst, 1);
 				
-		DatatypeProperty cet = m.createDatatypeProperty( R2R_CRAWL_END_DT );
+		DatatypeProperty cet = ontModel.createDatatypeProperty( R2R_CRAWL_END_DT );
 		cet.addDomain( affiliation );
 		cet.addRange( XSD.xlong );			
-		m.createMaxCardinalityRestriction(null, cet, 1);
+		ontModel.createMaxCardinalityRestriction(null, cet, 1);
+
+		DatatypeProperty lat = ontModel.createDatatypeProperty( PRNS_LATITUDE );
+		lat.addDomain( affiliation );
+		lat.addRange( XSD.xstring );			
+		ontModel.createMaxCardinalityRestriction(null, lat, 1);
+
+		DatatypeProperty lon = ontModel.createDatatypeProperty( PRNS_LONGITUDE );
+		lon.addDomain( affiliation );
+		lon.addRange( XSD.xstring );			
+		ontModel.createMaxCardinalityRestriction(null, lon, 1);
 
 		// Person properties
-		ObjectProperty aff = m.createObjectProperty( R2R_FROM_RN_WEBSITE );
+		ObjectProperty aff = ontModel.createObjectProperty( R2R_HAS_AFFILIATION );
 		aff.addDomain( person );
 		aff.addRange( affiliation );		
-		m.createMaxCardinalityRestriction(null, aff, 1);
+		ontModel.createMaxCardinalityRestriction(null, aff, 1);
+
+		// where did we acquire this data?
+		ObjectProperty hf = ontModel.createObjectProperty( R2R_HARVESTED_FROM );
+		hf.addDomain( person );
+		aff.addRange( affiliation );		
+		ontModel.createMaxCardinalityRestriction(null, hf, 1);
 
 		// when did we last see this person?
-		DatatypeProperty rv = m.createDatatypeProperty( R2R_VERIFIED_DT );
+		DatatypeProperty rv = ontModel.createDatatypeProperty( R2R_VERIFIED_DT );
 		rv.addDomain( person );
 		rv.addRange( XSD.xlong );			
-		m.createMaxCardinalityRestriction(null, rv, 1);
+		ontModel.createMaxCardinalityRestriction(null, rv, 1);
 
 		// when did we last see this persons work?
-		DatatypeProperty wv = m.createDatatypeProperty( R2R_WORK_VERIFIED_DT );
+		DatatypeProperty wv = ontModel.createDatatypeProperty( R2R_WORK_VERIFIED_DT );
 		wv.addDomain( person );
 		wv.addRange( XSD.xlong );			
-		m.createMaxCardinalityRestriction(null, wv, 1);
+		ontModel.createMaxCardinalityRestriction(null, wv, 1);
 	
-		DatatypeProperty thumbnail = m.createDatatypeProperty( R2R_THUMBNAIL );
+		DatatypeProperty thumbnail = ontModel.createDatatypeProperty( R2R_THUMBNAIL );
 		thumbnail.addDomain( person );
 		thumbnail.addRange( XSD.anyURI);	
-		m.createMaxCardinalityRestriction(null, thumbnail, 1);
+		ontModel.createMaxCardinalityRestriction(null, thumbnail, 1);
 
-		ObjectProperty ab = m.createObjectProperty( R2R_CONTRIBUTED_TO );
+		ObjectProperty ab = ontModel.createObjectProperty( R2R_CONTRIBUTED_TO );
 		ab.addDomain( person );
+		ab.addRange( XSD.anyURI);
 				
-		return m;
+		ObjectProperty pu = ontModel.createObjectProperty( R2R_PRETTY_URL );
+		pu.addDomain( person );
+		pu.addRange( XSD.anyURI);
+
+		return ontModel;
 	}
 	
 	public static void printModel(String filename) throws IOException {

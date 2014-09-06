@@ -4,8 +4,6 @@ import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-
-
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -13,33 +11,30 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-// put content headers in FusekiService and make that an abstract class
-public class FusekiHttpClient extends FusekiClient {
+public class SparqlHttpClient extends SparqlPostClient {
 
-	private static final Logger LOG = Logger.getLogger(FusekiHttpClient.class.getName());
 	
-	private String fusekiPost = "http://localhost:3030/ds/data?default";
-	private String fusekiUpdate = "http://localhost:3030/ds/update";
+//	private static final String UPDATE_CONTENT_TYPE = "application/sparql-update";
+	private static final String ADD_CONTENT_TYPE = "application/rdf+xml";
+
+	private static final Logger LOG = Logger.getLogger(SparqlHttpClient.class.getName());
+	
+	private String sparqlPost = "http://localhost:3030/ds/data?default";
 	
 	@Inject
-	public FusekiHttpClient(@Named("r2r.fuseki") String fusekiURL) {
-		super(fusekiURL);
-		this.fusekiPost = fusekiURL + "/data?default";
-		this.fusekiUpdate = fusekiURL + "/update";
+	public SparqlHttpClient(@Named("r2r.fusekiUrl") String fusekiURL) {
+		this(fusekiURL + "/sparql", fusekiURL + "/update", fusekiURL + "/data?default");
 	}
-			
-	public int deleteSubject(String uri) throws Exception {
-		return post(fusekiUpdate, UPDATE_CONTENT_TYPE, ("DELETE WHERE { <" + uri + ">  ?p ?o }").getBytes());
+
+	public SparqlHttpClient(String query, String update, String post) {
+		super(query, update);
+		this.sparqlPost = post;
 	}
 
 	public int add(byte[] body) throws Exception {
-		return post(fusekiPost, ADD_CONTENT_TYPE, body);
+		return post(sparqlPost, ADD_CONTENT_TYPE, body);
 	}
 
-	public int update(String sparql) throws Exception {
-		return post(fusekiUpdate, UPDATE_CONTENT_TYPE, sparql.getBytes());
-	}
-	
 	private int post(String url, String contentType, byte[] body) throws Exception {
 		// HttpClient httpclient = HttpClientBuilder.create().build(); this works with httpclient 4.3.3, but not 4.2.5
 		HttpClient httpclient = new DefaultHttpClient();
@@ -54,5 +49,4 @@ public class FusekiHttpClient extends FusekiClient {
 //				.execute();
 //		return response.returnResponse().getStatusLine().getStatusCode();		
 	}
-
 }
