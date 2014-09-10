@@ -33,7 +33,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private static final String DEFAULT = "DEFAULT";
 	private static final Logger LOG = Logger.getLogger(FusekiCache.class.getName());
 	
-	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts.}";
+	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts}";
 	
 	private SparqlPostClient fusekiClient;
 	private RDFXMLService rdfxmlService;
@@ -70,7 +70,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		// if it does not have an expiration date, grab a fresh one
         boolean resourceExpired = true;
 		if (expireHours != null && writeTime != null ) {
-			DateTime expiresOn = new DateTime(writeTime.getLong()).plusHours(expireHours);
+			DateTime expiresOn = new DateTime(writeTime.getValue()).plusHours(expireHours);
 			resourceExpired = expiresOn.isBeforeNow();
 		}
 		return resourceExpired;
@@ -117,7 +117,8 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		if (body != null) {
 			fusekiClient.add(body);
 			// now add the timestamp
-			fusekiClient.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> " + new DateTime().getMillis() + ".}");
+			fusekiClient.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> \"" + 
+					R2ROntology.createDefaultModel().createTypedLiteral(new DateTime()) + "\"}");
 		}
 		return body;		
 	}

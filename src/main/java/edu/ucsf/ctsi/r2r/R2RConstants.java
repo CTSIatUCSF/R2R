@@ -12,6 +12,12 @@ public interface R2RConstants {
 	static final String FOAF_PREFIX = "foaf";
 	static final String FOAF = "http://xmlns.com/foaf/0.1/";
 	static final String FOAF_PERSON = FOAF + "Person";			
+	static final String FOAF_HOMEPAGE = FOAF + "homepage";			
+	static final String FOAF_FIRST_NAME = FOAF + "firstName";			
+	static final String FOAF_LAST_NAME = FOAF + "lastName";			
+	static final String FOAF_IMAGE = FOAF + "Image";			
+	static final String FOAF_HAS_IMAGE = FOAF + "img";			
+	static final String FOAF_THUMBNAIL = FOAF + "thumbnail";			
 	
 	static final String BIBO_PREFIX = "bibo"; 
 	static final String BIBO = "http://purl.org/ontology/bibo/";
@@ -19,6 +25,12 @@ public interface R2RConstants {
 	static final String BIBO_ARTICLE = BIBO + "Article";
 	static final String BIBO_PMID = BIBO + "pmid";
 	static final String BIBO_DOI = BIBO + "doi";
+	
+	static final String GEO_PREFIX = "geo";
+	static final String GEO = "http://www.w3.org/2003/01/geo/wgs84_pos#";
+	static final String GEO_SPATIALTHING = GEO + "SpatialThing";
+	static final String GEO_LATITUDE = GEO + "lat";
+	static final String GEO_LONGITUDE = GEO + "long";
 
 	static final String VIVO_PREFIX = "vivo";
 	static final String VIVO = "http://vivoweb.org/ontology/core#";
@@ -27,9 +39,8 @@ public interface R2RConstants {
 
 	static final String PRNS_PREFIX = "prns";
 	static final String PRNS = "http://profiles.catalyst.harvard.edu/ontology/prns#";
-	static final String PRNS_MAIN_IMAGE = PRNS + "mainImage";
-	static final String PRNS_LATITUDE = PRNS + "latitude";
-	static final String PRNS_LONGITUDE = PRNS + "longitude";
+//	static final String PRNS_LATITUDE = PRNS + "latitude";
+//	static final String PRNS_LONGITUDE = PRNS + "longitude";
 	
 	static final String R2R_PREFIX = "r2r";
 	static final String R2R = "http://ucsf.edu/ontology/r2r#";
@@ -37,8 +48,6 @@ public interface R2RConstants {
 	static final String R2R_AFFILIATION = R2R + "Affiliation";
 	// properties
 	static final String R2R_ADDED_TO_CACHE = R2R + "addedToCacheOn";
-	static final String R2R_THUMBNAIL = R2R + "thumbnail";
-	static final String R2R_PRETTY_URL = R2R + "prettyURL";
 	static final String R2R_CRAWL_START_DT = R2R + "crawlStartDT";	
 	static final String R2R_CRAWL_END_DT = R2R + "crawlEndDT";	
 	static final String R2R_HAS_AFFILIATION = R2R + "hasAffiliation";	
