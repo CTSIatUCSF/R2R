@@ -12,12 +12,14 @@ public interface R2RConstants {
 	static final String FOAF_PREFIX = "foaf";
 	static final String FOAF = "http://xmlns.com/foaf/0.1/";
 	static final String FOAF_PERSON = FOAF + "Person";			
-	static final String FOAF_HOMEPAGE = FOAF + "homepage";			
+	static final String FOAF_PUBLICATIONS = FOAF + "publications";			
+	static final String FOAF_HOMEPAGE = FOAF + "workInfoHomepage";			
 	static final String FOAF_FIRST_NAME = FOAF + "firstName";			
 	static final String FOAF_LAST_NAME = FOAF + "lastName";			
 	static final String FOAF_IMAGE = FOAF + "Image";			
 	static final String FOAF_HAS_IMAGE = FOAF + "img";			
 	static final String FOAF_THUMBNAIL = FOAF + "thumbnail";			
+	static final String FOAF_KNOWS = FOAF + "knows";			
 	
 	static final String BIBO_PREFIX = "bibo"; 
 	static final String BIBO = "http://purl.org/ontology/bibo/";
@@ -44,8 +46,12 @@ public interface R2RConstants {
 	
 	static final String R2R_PREFIX = "r2r";
 	static final String R2R = "http://ucsf.edu/ontology/r2r#";
+	
+	// graphs
+	static final String R2R_DERIVED_GRAPH = R2R + "DerivedData";
 	//classes
 	static final String R2R_AFFILIATION = R2R + "Affiliation";
+	static final String R2R_CRAWLER = R2R + "Crawler";
 	// properties
 	static final String R2R_ADDED_TO_CACHE = R2R + "addedToCacheOn";
 	static final String R2R_CRAWL_START_DT = R2R + "crawlStartDT";	
@@ -53,6 +59,7 @@ public interface R2RConstants {
 	static final String R2R_HAS_AFFILIATION = R2R + "hasAffiliation";	
 	static final String R2R_VERIFIED_DT = R2R + "verifiedDT";
 	static final String R2R_WORK_VERIFIED_DT = R2R + "workVerifiedDT";
-	static final String R2R_CONTRIBUTED_TO = R2R + "contributedTo";
 	static final String R2R_HARVESTED_FROM = R2R + "harvestedFrom";
+	static final String R2R_EXTERNAL_COAUTHOR_CNT = R2R + "extCoauthorCnt";
+	static final String R2R_SHARED_PUB_CNT = R2R + "sharedPubCnt";
 }
