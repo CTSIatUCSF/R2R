@@ -39,7 +39,7 @@ public class SparqlClient {
 		}
 	}
 	
-	public void select(String sparql, ResultSetConsumer consumer) {
+	public void select(String sparql, ResultSetConsumer consumer) throws Exception {
 		QueryExecution qe = getQueryExecution(sparql);
 		try {
 			consumer.useResultSet(qe.execSelect());

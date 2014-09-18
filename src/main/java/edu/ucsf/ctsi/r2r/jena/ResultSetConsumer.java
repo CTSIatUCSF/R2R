@@ -4,6 +4,6 @@ import com.hp.hpl.jena.query.ResultSet;
 
 public interface ResultSetConsumer {
 
-	void useResultSet(ResultSet rs);
+	void useResultSet(ResultSet rs) throws Exception;
 
 }

@@ -2,6 +2,7 @@ package edu.ucsf.ctsi.r2r.jena;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.google.inject.Inject;
@@ -26,6 +27,7 @@ public class SparqlUpdateClient extends SparqlClient {
 	
 	private String sparqlUpdate = "http://localhost:3030/ds/update";
 	
+	private static final ThreadLocal<AtomicInteger> txRequestCnt = new ThreadLocal<AtomicInteger>();
 	private static final ThreadLocal<UpdateRequest> txRequest = new ThreadLocal<UpdateRequest>();
 	
 	@Inject
@@ -39,12 +41,19 @@ public class SparqlUpdateClient extends SparqlClient {
 	}
 			
 	public void startTransaction() {
-		txRequest.set(UpdateFactory.create());
+		if (txRequestCnt.get() == null) {
+			txRequestCnt.set(new AtomicInteger());
+			txRequest.set(UpdateFactory.create());
+		}
+		txRequestCnt.get().incrementAndGet();
 	}
 
 	public void endTransaction() {
-		execute(txRequest.get());
-		txRequest.remove();
+		if (txRequestCnt.get().decrementAndGet() == 0) {
+			execute(txRequest.get());
+			txRequestCnt.remove();
+			txRequest.remove();
+		}
 	}
 	
 	private UpdateRequest getCurrentTxRequest() {
