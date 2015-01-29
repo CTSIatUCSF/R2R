@@ -56,10 +56,10 @@ public interface R2RConstants {
 	static final String R2R_ADDED_TO_CACHE = R2R + "addedToCacheOn";
 	static final String R2R_CRAWL_START_DT = R2R + "crawlStartDT";	
 	static final String R2R_CRAWL_END_DT = R2R + "crawlEndDT";	
+	
 	static final String R2R_HAS_AFFILIATION = R2R + "hasAffiliation";	
-	static final String R2R_VERIFIED_DT = R2R + "verifiedDT";
-	static final String R2R_WORK_VERIFIED_DT = R2R + "workVerifiedDT";
-	static final String R2R_HARVESTED_FROM = R2R + "harvestedFrom";
+	static final String R2R_CRAWLED_BY = R2R + "crawledBy";
+	static final String R2R_CRAWLED_ON = R2R + "crawledOn";
 	static final String R2R_EXTERNAL_COAUTHOR_CNT = R2R + "extCoauthorCnt";
 	static final String R2R_SHARED_PUB_CNT = R2R + "sharedPubCnt";
 }

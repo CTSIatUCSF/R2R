@@ -1,5 +1,6 @@
 package edu.ucsf.ctsi.r2r.jena;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.hp.hpl.jena.query.QueryExecution;
@@ -7,16 +8,24 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 
 // make this an interface that can work without httpfetcher
-public class SparqlClient {
+public final class SparqlQueryClient {
 	
-	private static final Logger LOG = Logger.getLogger(SparqlClient.class.getName());
+	private static final Logger LOG = Logger.getLogger(SparqlQueryClient.class.getName());
 	
-	private String endpoint = "http://marengo.info-science.uiowa.edu:2020/sparql";
+	private String endpoint = null;
 	
 	private long readCnt = 0;
+	private long timeout1 = -1;
+	private long timeout2 = -1;
 
-	public SparqlClient(String endpoint) {
+	public SparqlQueryClient(String endpoint, long timeout1, long timeout2) {
 		this.endpoint = endpoint;
+		this.timeout1 = timeout1;
+		this.timeout2 = timeout2;
+	}
+
+	public SparqlQueryClient(String endpoint) {
+		this(endpoint, -1, -1);
 	}
 
 	public Model describe(String uri) {
@@ -30,7 +39,7 @@ public class SparqlClient {
 	}
 	
 	public boolean ask(String sparql) {
-		QueryExecution qe = getQueryExecution(sparql, 1000, 1000);
+		QueryExecution qe = getQueryExecution(sparql);
 		try {
 			return qe.execAsk();
 		}
@@ -60,10 +69,6 @@ public class SparqlClient {
 	}
 
 	private QueryExecution getQueryExecution(String sparql) {
-		return getQueryExecution(sparql, -1, -1);
-	}
-
-	private QueryExecution getQueryExecution(String sparql, long timeout1, long timeout2) {
 		QueryExecution qe = QueryExecutionFactory.sparqlService(endpoint, sparql);
 		qe.setTimeout(timeout1, timeout2);
 		LOG.info("Timeout = " + qe.getTimeout1() + "," + qe.getTimeout2() + " : readTxCount = " + readCnt++ + " for " + sparql);

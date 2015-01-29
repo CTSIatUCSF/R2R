@@ -3,6 +3,7 @@ package edu.ucsf.ctsi.r2r.jena;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.logging.Logger;
 import org.joda.time.DateTime;
 
 import com.google.inject.Inject;
+import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -34,13 +36,15 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	
 	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts}";
 	
+	private SparqlQueryClient sparqlQueryClient;
 	private SparqlPostClient fusekiClient;
 	private RDFXMLService rdfxmlService;
 	private Map<String, Integer> expirationHours = new HashMap<String, Integer>();
 	private final Integer defaultExpirationHours;
 		
 	@Inject
-	public FusekiCache(SparqlPostClient fusekiClient, RDFXMLService rdfxmlService) throws IOException {		
+	public FusekiCache(SparqlQueryClient sparqlQueryClient, SparqlPostClient fusekiClient, RDFXMLService rdfxmlService) throws IOException {
+		this.sparqlQueryClient = sparqlQueryClient;
 		this.fusekiClient = fusekiClient;
 		this.rdfxmlService = rdfxmlService;
 		
@@ -54,7 +58,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 
 	public boolean contains(String uri) {
 		String query = "ASK {<" + uri + "> <" + R2R_ADDED_TO_CACHE + "> ?o}";
-		return fusekiClient.ask(query);
+		return sparqlQueryClient.ask(query);
 	}
 	
 	private Integer getCacheExpireHours(String type) {
@@ -69,8 +73,16 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		// if it does not have an expiration date, grab a fresh one
         boolean resourceExpired = true;
 		if (expireHours != null && writeTime != null ) {
-			DateTime expiresOn = new DateTime(writeTime.getValue()).plusHours(expireHours);
-			resourceExpired = expiresOn.isBeforeNow();
+			LOG.log(Level.WARNING, "writeTime :" + writeTime.getValue().getClass());
+			LOG.log(Level.WARNING, "writeTime1 :" + writeTime.getValue());
+			try {
+				DateTime expiresOn = new DateTime(((XSDDateTime)writeTime.getValue()).asCalendar()).plusHours(expireHours);			
+				LOG.log(Level.WARNING, "writeTime2 :" + writeTime.getValue());
+				resourceExpired = expiresOn.isBeforeNow();
+			}
+			catch (Exception e) {
+				LOG.log(Level.WARNING, "WTF", e);				
+			}
 		}
 		return resourceExpired;
 	}
@@ -78,7 +90,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	// see if sparql ASK will work better
 	private boolean hasExpired(String uri) throws Exception {
 		ExpiredResultSetConsumer consumer = new ExpiredResultSetConsumer();
-		fusekiClient.select(String.format(EXPIRED_TEMPLATE, uri, uri), consumer);
+		sparqlQueryClient.select(String.format(EXPIRED_TEMPLATE, uri, uri), consumer);
 		return consumer.getHasExpired();
 	}
 
@@ -90,7 +102,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			return body;
 		}
 		else {
-			return fusekiClient.describe(uri);
+			return sparqlQueryClient.describe(uri);
 		}
 	}
 
@@ -117,7 +129,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			fusekiClient.add(body);
 			// now add the timestamp
 			fusekiClient.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> \"" + 
-					R2ROntology.createDefaultModel().createTypedLiteral(new DateTime()) + "\"}");
+					R2ROntology.createDefaultModel().createTypedLiteral(Calendar.getInstance()) + "\"}");
 		}
 		return body;		
 	}
@@ -186,14 +198,15 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			where += "OPTIONAL {" + substring + "} "; 			
 			varNameMap.put(var, field);
 		}
-		return fusekiClient.construct(select + where + "}");
+		return sparqlQueryClient.construct(select + where + "}");
 	}
 	
 	public static void main(String[] args) {
 		try  {								
 			// get these first
-			SparqlPostClient fs = new SparqlHttpClient("http://localhost:3030/profiles");
-			FusekiCache fc = new FusekiCache(fs, null);
+			SparqlQueryClient sq = new SparqlQueryClient("http://localhost:3030/profiles/query");
+			SparqlPostClient fs = new SparqlPostClient("http://localhost:3030/profiles/update", "http://localhost:3030/profiles/data?default");
+			FusekiCache fc = new FusekiCache(sq, fs, null);
 			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/366860");
 			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/123");
 			

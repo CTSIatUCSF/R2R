@@ -1,6 +1,6 @@
 package edu.ucsf.ctsi.r2r.jena;
 
-import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,9 +37,9 @@ public class JsonLDService {
 	}
 
 	public String getJSONString(Model model) throws JSONException {
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		RDFDataMgr.write(stream, model, RDFFormat.JSONLD);
-		return stream.toString();
+		StringWriter sw = new StringWriter();
+		RDFDataMgr.write(sw, model, RDFFormat.JSONLD);
+		return sw.toString();
 	}
 
 }

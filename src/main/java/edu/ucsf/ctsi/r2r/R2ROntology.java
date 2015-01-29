@@ -18,6 +18,7 @@ import com.hp.hpl.jena.ontology.OntProperty;
 import com.hp.hpl.jena.ontology.Restriction;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.XSD;
 
 
@@ -95,24 +96,19 @@ public class R2ROntology implements R2RConstants {
 		aff.addRange( affiliation );		
 		ontModel.createMaxCardinalityRestriction(null, aff, 1);
 
-		// where did we acquire this data?
-		ObjectProperty hf = ontModel.createObjectProperty( R2R_HARVESTED_FROM );
+		// crawler blank node
+		Resource crawlRun = ontModel.createResource();
+
+		DatatypeProperty cro = ontModel.createDatatypeProperty( R2R_CRAWLED_ON );
+		cro.addDomain( crawlRun );
+		cro.addRange( XSD.dateTime );			
+		ontModel.createMaxCardinalityRestriction(null, cro, 1);
+		
+		ObjectProperty hf = ontModel.createObjectProperty( R2R_CRAWLED_BY );
 		hf.addDomain( person );
-		aff.addRange( crawler );		
+		aff.addRange( crawlRun );		
 //		ontModel.createMaxCardinalityRestriction(null, hf, 1);
 
-		// when did we last see this person?
-		DatatypeProperty rv = ontModel.createDatatypeProperty( R2R_VERIFIED_DT );
-		rv.addDomain( person );
-		rv.addRange( XSD.dateTime );			
-		ontModel.createMaxCardinalityRestriction(null, rv, 1);
-
-		// when did we last see this persons work?
-		DatatypeProperty wv = ontModel.createDatatypeProperty( R2R_WORK_VERIFIED_DT );
-		wv.addDomain( person );
-		wv.addRange( XSD.dateTime );			
-		ontModel.createMaxCardinalityRestriction(null, wv, 1);
-	
 		// derived cnt's
 		DatatypeProperty ecc = ontModel.createDatatypeProperty( R2R_EXTERNAL_COAUTHOR_CNT );
 		ecc.addDomain( person );
