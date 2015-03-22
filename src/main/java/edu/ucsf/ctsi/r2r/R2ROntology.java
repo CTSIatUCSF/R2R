@@ -54,9 +54,9 @@ public class R2ROntology implements R2RConstants {
 		model.setNsPrefix(BIBO_PREFIX, BIBO);
 		model.setNsPrefix(FOAF_PREFIX, FOAF);
 		model.setNsPrefix(GEO_PREFIX, GEO);
-		model.setNsPrefix(R2R_PREFIX, R2R);
 		model.setNsPrefix(VIVO_PREFIX, VIVO);
 		model.setNsPrefix(PRNS_PREFIX, PRNS);
+		model.setNsPrefix(R2R_PREFIX, R2R);
 	}
 	
 	public static OntModel createR2ROntModel() {
@@ -67,7 +67,7 @@ public class R2ROntology implements R2RConstants {
 		ontModel.read(new ByteArrayInputStream(foafFile), null);
 		ontModel.read(new ByteArrayInputStream(geoFile), null);
 
-		OntClass crawler = ontModel.createClass(R2R_CRAWLER);
+		OntClass crawler = ontModel.createClass(R2R_PROCESSOR);
 		OntClass affiliation = ontModel.createClass(R2R_AFFILIATION);
 		OntClass person = ontModel.createClass( FOAF_PERSON );
 				
@@ -77,19 +77,25 @@ public class R2ROntology implements R2RConstants {
 		ontModel.createMaxCardinalityRestriction(null, ts, 1);
 
 		// Crawler properties
-		DatatypeProperty cst = ontModel.createDatatypeProperty( R2R_CRAWL_START_DT );
+		DatatypeProperty cst = ontModel.createDatatypeProperty( R2R_PROCESSOR_START_DT );
 		cst.addDomain( crawler );
 		cst.addRange( XSD.dateTime );			
 		ontModel.createMaxCardinalityRestriction(null, cst, 1);
 				
-		DatatypeProperty cet = ontModel.createDatatypeProperty( R2R_CRAWL_END_DT );
+		DatatypeProperty cet = ontModel.createDatatypeProperty( R2R_PROCESSOR_END_DT );
 		cet.addDomain( crawler );
 		cet.addRange( XSD.dateTime );			
 		ontModel.createMaxCardinalityRestriction(null, cet, 1);
 
 		// affiliation
 		affiliation.addSuperClass(ontModel.createClass(GEO_SPATIALTHING));
-		
+		ObjectProperty rns = ontModel.createObjectProperty(R2R_HAS_RNS);
+		rns.addDomain( affiliation );
+		ObjectProperty icon = ontModel.createObjectProperty(R2R_HAS_ICON);
+		icon.addDomain( affiliation );
+		icon.addRange(ontModel.createResource(FOAF_IMAGE));
+		ontModel.createMaxCardinalityRestriction(null, icon, 1);
+
 		// Person properties
 		ObjectProperty aff = ontModel.createObjectProperty( R2R_HAS_AFFILIATION );
 		aff.addDomain( person );
@@ -99,12 +105,12 @@ public class R2ROntology implements R2RConstants {
 		// crawler blank node
 		Resource crawlRun = ontModel.createResource();
 
-		DatatypeProperty cro = ontModel.createDatatypeProperty( R2R_CRAWLED_ON );
+		DatatypeProperty cro = ontModel.createDatatypeProperty( R2R_PROCESSED_ON );
 		cro.addDomain( crawlRun );
 		cro.addRange( XSD.dateTime );			
 		ontModel.createMaxCardinalityRestriction(null, cro, 1);
 		
-		ObjectProperty hf = ontModel.createObjectProperty( R2R_CRAWLED_BY );
+		ObjectProperty hf = ontModel.createObjectProperty( R2R_PROCESSED_BY );
 		hf.addDomain( person );
 		aff.addRange( crawlRun );		
 //		ontModel.createMaxCardinalityRestriction(null, hf, 1);

@@ -51,15 +51,17 @@ public interface R2RConstants {
 	static final String R2R_DERIVED_GRAPH = R2R + "DerivedData";
 	//classes
 	static final String R2R_AFFILIATION = R2R + "Affiliation";
-	static final String R2R_CRAWLER = R2R + "Crawler";
+	static final String R2R_PROCESSOR = R2R + "Processor";
 	// properties
 	static final String R2R_ADDED_TO_CACHE = R2R + "addedToCacheOn";
-	static final String R2R_CRAWL_START_DT = R2R + "crawlStartDT";	
-	static final String R2R_CRAWL_END_DT = R2R + "crawlEndDT";	
+	static final String R2R_PROCESSOR_START_DT = R2R + "processorStartDT";	
+	static final String R2R_PROCESSOR_END_DT = R2R + "processorEndDT";	
 	
 	static final String R2R_HAS_AFFILIATION = R2R + "hasAffiliation";	
-	static final String R2R_CRAWLED_BY = R2R + "crawledBy";
-	static final String R2R_CRAWLED_ON = R2R + "crawledOn";
+	static final String R2R_HAS_RNS = R2R + "hasRNS";	
+	static final String R2R_HAS_ICON = R2R + "hasIcon";	
+	static final String R2R_PROCESSED_BY = R2R + "processedBy";
+	static final String R2R_PROCESSED_ON = R2R + "processedOn";
 	static final String R2R_EXTERNAL_COAUTHOR_CNT = R2R + "extCoauthorCnt";
 	static final String R2R_SHARED_PUB_CNT = R2R + "sharedPubCnt";
 }

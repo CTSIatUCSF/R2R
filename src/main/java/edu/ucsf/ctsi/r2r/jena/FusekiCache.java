@@ -35,6 +35,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private static final Logger LOG = Logger.getLogger(FusekiCache.class.getName());
 	
 	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts}";
+	private static final String EXPIRED_ASK_TEMPLATE = "ASK { <%1$s> <" + R2R_ADDED_TO_CACHE + "> ?ac. FILTER(?ac > \"%2$s\") }";
 	
 	private SparqlQueryClient sparqlQueryClient;
 	private SparqlPostClient fusekiClient;
@@ -43,10 +44,13 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private final Integer defaultExpirationHours;
 		
 	@Inject
-	public FusekiCache(SparqlQueryClient sparqlQueryClient, SparqlPostClient fusekiClient, RDFXMLService rdfxmlService) throws IOException {
+	public FusekiCache(SparqlQueryClient sparqlQueryClient, SparqlPostClient fusekiClient, RDFXMLService rdfxmlService) throws Exception {
 		this.sparqlQueryClient = sparqlQueryClient;
 		this.fusekiClient = fusekiClient;
 		this.rdfxmlService = rdfxmlService;
+		
+		// add the model to the cache
+		fusekiClient.add(R2ROntology.createR2ROntModel());
 		
 		Properties prop = new Properties();
 		prop.load(FusekiCache.class.getResourceAsStream("/fusekiCache.properties"));		
