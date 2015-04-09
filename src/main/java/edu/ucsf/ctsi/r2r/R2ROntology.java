@@ -3,10 +3,6 @@ package edu.ucsf.ctsi.r2r;
 import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
 
@@ -14,8 +10,6 @@ import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.ObjectProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntProperty;
-import com.hp.hpl.jena.ontology.Restriction;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -89,8 +83,6 @@ public class R2ROntology implements R2RConstants {
 
 		// affiliation
 		affiliation.addSuperClass(ontModel.createClass(GEO_SPATIALTHING));
-		ObjectProperty rns = ontModel.createObjectProperty(R2R_HAS_RNS);
-		rns.addDomain( affiliation );
 		ObjectProperty icon = ontModel.createObjectProperty(R2R_HAS_ICON);
 		icon.addDomain( affiliation );
 		icon.addRange(ontModel.createResource(FOAF_IMAGE));

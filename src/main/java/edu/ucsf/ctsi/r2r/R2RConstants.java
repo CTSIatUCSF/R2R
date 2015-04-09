@@ -58,7 +58,6 @@ public interface R2RConstants {
 	static final String R2R_PROCESSOR_END_DT = R2R + "processorEndDT";	
 	
 	static final String R2R_HAS_AFFILIATION = R2R + "hasAffiliation";	
-	static final String R2R_HAS_RNS = R2R + "hasRNS";	
 	static final String R2R_HAS_ICON = R2R + "hasIcon";	
 	static final String R2R_PROCESSED_BY = R2R + "processedBy";
 	static final String R2R_PROCESSED_ON = R2R + "processedOn";
