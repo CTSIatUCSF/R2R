@@ -1,5 +1,7 @@
 package edu.ucsf.ctsi.r2r.jena;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
@@ -7,6 +9,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+
+import com.hp.hpl.jena.rdf.model.Model;
 
 public class SparqlPostClient extends SparqlUpdateClient {
 	
@@ -25,6 +29,14 @@ public class SparqlPostClient extends SparqlUpdateClient {
 	
 	protected String getSparqlPostEndpoint() {
 		return sparqlPost;
+	}
+
+	public int post(Model model) throws Exception {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		model.write(stream);
+		stream.flush();
+		stream.close();
+		return add(stream.toByteArray());
 	}
 
 	public int add(byte[] body) throws Exception {
