@@ -2,10 +2,9 @@ package edu.ucsf.ctsi.r2r.jena;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -13,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.inject.Inject;
 import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
@@ -37,6 +37,8 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts}";
 	private static final String EXPIRED_ASK_TEMPLATE = "ASK { <%1$s> <" + R2R_ADDED_TO_CACHE + "> ?ac. FILTER(?ac > \"%2$s\") }";
 	
+	private static final SimpleDateFormat datetmeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+
 	private SparqlQueryClient sparqlQueryClient;
 	private SparqlPostClient fusekiClient;
 	private RDFXMLService rdfxmlService;
@@ -75,24 +77,24 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private boolean hasExpired(Literal writeTime, String type) {
 		Integer expireHours = getCacheExpireHours(type);
 		// if it does not have an expiration date, grab a fresh one
-        boolean resourceExpired = true;
+		DateTime expiresOn = null;
 		if (expireHours != null && writeTime != null ) {
-			LOG.log(Level.WARNING, "writeTime :" + writeTime.getValue().getClass());
-			LOG.log(Level.WARNING, "writeTime1 :" + writeTime.getValue());
 			try {
-				DateTime expiresOn = new DateTime(((XSDDateTime)writeTime.getValue()).asCalendar()).plusHours(expireHours);			
-				LOG.log(Level.WARNING, "writeTime2 :" + writeTime.getValue());
-				resourceExpired = expiresOn.isBeforeNow();
+				expiresOn = new DateTime(((XSDDateTime)writeTime.getValue()).asCalendar()).plusHours(expireHours);			
 			}
 			catch (Exception e) {
-				LOG.log(Level.WARNING, "WTF", e);				
+				LOG.log(Level.WARNING, "writeTime exception", e);				
+				LOG.log(Level.WARNING, "writeTime class:" + writeTime.getValue().getClass());
+				LOG.log(Level.WARNING, "writeTime datatype:" + writeTime.getDatatypeURI());
+				LOG.log(Level.WARNING, "writeTime value :" + writeTime.getValue());
 			}
 		}
-		return resourceExpired;
+		return expiresOn != null ? expiresOn.isBeforeNow() : true;
 	}
 
 	// see if sparql ASK will work better
 	private boolean hasExpired(String uri) throws Exception {
+		//return sparqlQueryClient.ask(String.format(EXPIRED_ASK_TEMPLATE, uri, uri));
 		ExpiredResultSetConsumer consumer = new ExpiredResultSetConsumer();
 		sparqlQueryClient.select(String.format(EXPIRED_TEMPLATE, uri, uri), consumer);
 		return consumer.getHasExpired();
@@ -132,8 +134,11 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		if (body != null) {
 			fusekiClient.add(body);
 			// now add the timestamp
-			fusekiClient.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> \"" + 
-					R2ROntology.createDefaultModel().createTypedLiteral(Calendar.getInstance()) + "\"}");
+			fusekiClient.update("PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>" + 
+					"INSERT { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> ?typedDate} WHERE {BIND (xsd:dateTime(\"" + 
+					datetmeFormat.format(Calendar.getInstance().getTime()) + "\") as ?typedDate)}");			
+//			fusekiClient.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> \"" + 
+//					R2ROntology.createDefaultModel().createTypedLiteral(Calendar.getInstance()) + "\"}");
 		}
 		return body;		
 	}
@@ -206,20 +211,35 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	}
 	
 	public static void main(String[] args) {
-		try  {								
-			// get these first
-			SparqlQueryClient sq = new SparqlQueryClient("http://localhost:3030/profiles/query");
-			SparqlPostClient fs = new SparqlPostClient("http://localhost:3030/profiles/update", "http://localhost:3030/profiles/data?default");
-			FusekiCache fc = new FusekiCache(sq, fs, null);
-			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/366860");
-			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/123");
+		try  {		
+			String dateTimeStr = "2015-07-28T15:28:13Z";
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+			System.out.println(format.format(Calendar.getInstance().getTime()));
+			System.out.println(ISODateTimeFormat.dateTime().print(new DateTime()));
+			System.out.println(R2ROntology.createDefaultModel().createTypedLiteral(Calendar.getInstance()).toString());
+			System.out.println(R2ROntology.createDefaultModel().createTypedLiteral(Calendar.getInstance()).getLexicalForm());
+			System.out.println(R2ROntology.createDefaultModel().createTypedLiteral(Calendar.getInstance()).getDatatypeURI());
+			//System.out.println(
+					//ISODateTimeFormat.dateTime().parseDateTime(dateTimeStr).toDateTime().plusHours(0)
+					//);
 			
-			Set<String> fields = new HashSet<String>();
-			fields.add("http://ucsf.edu/ontology/R2R#addedToCacheOn");
-			fields.add("http://www.w3.org/2000/01/rdf-schema#label");
-			fields.add("http://www.w3.org/2000/01/rdf-schema#foo");
-			Model model = fc.getModel("http://stage-profiles.ucsf.edu/profiles200/profile/365069", fields);
-			model.write(System.out);
+			String fusekiURL = "http://localhost:3030/profiles";
+			FusekiCache userCache = new FusekiCache(new SparqlQueryClient(fusekiURL + "/query"),
+					new SparqlPostClient(fusekiURL + "/update", fusekiURL + "/data?default"), 
+					null);//new DbService(systemDomain, orngUser, dbUtil));			// get these first
+			userCache.getResource("http://stage-profiles.ucsf.edu/profiles260/profile/41510337");
+//			SparqlQueryClient sq = new SparqlQueryClient("http://localhost:3030/profiles/query");
+//			SparqlPostClient fs = new SparqlPostClient("http://localhost:3030/profiles/update", "http://localhost:3030/profiles/data?default");
+//			FusekiCache fc = new FusekiCache(sq, fs, null);
+//			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/366860");
+//			fc.hasExpired("http://stage-profiles.ucsf.edu/profiles200/profile/123");
+//			
+//			Set<String> fields = new HashSet<String>();
+//			fields.add("http://ucsf.edu/ontology/R2R#addedToCacheOn");
+//			fields.add("http://www.w3.org/2000/01/rdf-schema#label");
+//			fields.add("http://www.w3.org/2000/01/rdf-schema#foo");
+//			Model model = fc.getModel("http://stage-profiles.ucsf.edu/profiles200/profile/365069", fields);
+//			model.write(System.out);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
