@@ -37,8 +37,6 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts}";
 	private static final String EXPIRED_ASK_TEMPLATE = "ASK { <%1$s> <" + R2R_ADDED_TO_CACHE + "> ?ac. FILTER(?ac > \"%2$s\") }";
 	
-	private static final SimpleDateFormat datetmeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
-
 	private SparqlQueryClient sparqlQueryClient;
 	private SparqlPostClient fusekiClient;
 	private RDFXMLService rdfxmlService;
@@ -136,7 +134,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			// now add the timestamp
 			fusekiClient.update("PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>" + 
 					"INSERT { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> ?typedDate} WHERE {BIND (xsd:dateTime(\"" + 
-					datetmeFormat.format(Calendar.getInstance().getTime()) + "\") as ?typedDate)}");			
+					ISODateTimeFormat.dateTime().print(new DateTime()) + "\") as ?typedDate)}");			
 //			fusekiClient.update("INSERT DATA { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> \"" + 
 //					R2ROntology.createDefaultModel().createTypedLiteral(Calendar.getInstance()) + "\"}");
 		}
