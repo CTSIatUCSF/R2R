@@ -1,6 +1,6 @@
 package edu.ucsf.ctsi.r2r.jena;
 
-import com.hp.hpl.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Model;
 
 public interface ModelService {
 	

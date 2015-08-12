@@ -19,7 +19,6 @@ public interface R2RConstants {
 	static final String FOAF_IMAGE = FOAF + "Image";			
 	static final String FOAF_HAS_IMAGE = FOAF + "img";			
 	static final String FOAF_THUMBNAIL = FOAF + "thumbnail";			
-	static final String FOAF_KNOWS = FOAF + "knows";			
 	
 	static final String BIBO_PREFIX = "bibo"; 
 	static final String BIBO = "http://purl.org/ontology/bibo/";
@@ -48,10 +47,12 @@ public interface R2RConstants {
 	static final String R2R = "http://ucsf.edu/ontology/r2r#";
 	
 	// graphs
+	static final String R2R_THUMBNAIL_GRAPH = R2R + "Thumbnail";
 	static final String R2R_DERIVED_GRAPH = R2R + "DerivedData";
 	//classes
 	static final String R2R_AFFILIATION = R2R + "Affiliation";
 	static final String R2R_PROCESSOR = R2R + "Processor";
+	static final String R2R_PROCESSOR_RUN = R2R + "ProcessorRun";
 	// properties
 	static final String R2R_ADDED_TO_CACHE = R2R + "addedToCacheOn";
 	static final String R2R_PROCESSOR_START_DT = R2R + "processorStartDT";	
@@ -59,6 +60,7 @@ public interface R2RConstants {
 	
 	static final String R2R_HAS_AFFILIATION = R2R + "hasAffiliation";	
 	static final String R2R_HAS_ICON = R2R + "hasIcon";	
+	static final String R2R_PROCESSED = R2R + "processed";
 	static final String R2R_PROCESSED_BY = R2R + "processedBy";
 	static final String R2R_PROCESSED_ON = R2R + "processedOn";
 	static final String R2R_EXTERNAL_COAUTHOR_CNT = R2R + "extCoauthorCnt";

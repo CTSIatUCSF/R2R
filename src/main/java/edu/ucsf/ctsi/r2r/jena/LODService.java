@@ -4,10 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.util.logging.Logger;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.FileManager;
 
-import com.hp.hpl.jena.util.FileManager;
 
 public class LODService implements ModelService, RDFXMLService, ResourceService {
 

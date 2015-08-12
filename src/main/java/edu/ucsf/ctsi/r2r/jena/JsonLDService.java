@@ -4,12 +4,11 @@ import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.hp.hpl.jena.rdf.model.Model;
 
 public class JsonLDService {
 

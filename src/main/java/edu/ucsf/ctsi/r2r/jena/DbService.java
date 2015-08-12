@@ -7,11 +7,11 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.util.logging.Logger;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.ucsf.ctsi.r2r.DBUtil;
 import edu.ucsf.ctsi.r2r.R2ROntology;
