@@ -95,6 +95,9 @@ public class SparqlUpdateClient implements R2RConstants {
 									bs.getObject().asLiteral().getLexicalForm() + "\"^^<" + 
 									bs.getObject().asLiteral().getDatatypeURI() + "> ; ";
 						}
+						else {
+							spql += " <" + bs.getPredicate().getURI() + "> <" + bs.getObject().asResource().getURI() +  "> ; ";
+						}
 					}
 					if (blankCnt > 0) {
 						sparql.add(spql + "}");						
