@@ -5,15 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Scanner;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.util.FileManager;
-import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 
 import edu.ucsf.ctsi.r2r.R2ROntology;
 
@@ -69,19 +65,7 @@ public class LODService implements ModelService, RDFXMLService, ResourceService 
 		}		
 		LOG.info("Loading : " + url);
 
-		try {
-	    	return FileManager.get().loadModel(url);			
-		}
-		catch (Exception e) {
-			LOG.log(Level.WARNING, "Could not load model for " + url + ", trying JSoup to get redirect", e);
-		}
-		
-		// try JSoup which can follow redirects
-		Response response = Jsoup.connect(url)
-				.header("Accept", "application/rdf+xml")
-                .followRedirects(true) //to follow redirects
-                .execute();
-    	return FileManager.get().loadModel(response.url().toString());
+    	return FileManager.get().loadModel(url);			
 	}
 
 	private Integer getNodeId(String uri) {
