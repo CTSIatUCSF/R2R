@@ -36,6 +36,7 @@ public interface R2RConstants {
 	static final String VIVO_PREFIX = "vivo";
 	static final String VIVO = "http://vivoweb.org/ontology/core#";
 	static final String VIVO_PMCID = VIVO + "pmcid";
+	static final String VIVO_PREFERRED_TITLE = VIVO + "preferredTitle";			
 	static final String VIVO_ORCID_ID = VIVO + "orcidId";
 
 	static final String PRNS_PREFIX = "prns";

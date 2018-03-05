@@ -88,12 +88,11 @@ public class DbService implements ModelService, RDFXMLService, ResourceService {
 	private String getSessionId(Connection conn) throws SQLException {
 		// log in, maybe check if username is null and do anonymous TDB in that case
 		if (orngUser != null) {
-	        CallableStatement cs = conn.prepareCall("{ call [User.Account].[Authenticate](?, ?, ?)}");
+	        CallableStatement cs = conn.prepareCall("{ call [User.Account].[AuthenticateExternal](?, ?)}");
 	        cs.setString(1, orngUser);
-	        cs.setString(2, orngUser);
-	        cs.registerOutParameter(3, java.sql.Types.INTEGER);
+	        cs.registerOutParameter(2, java.sql.Types.INTEGER);
 	        cs.executeUpdate();
-	        int userId = cs.getInt(3);
+	        int userId = cs.getInt(2);
 	        cs.close();
 	        
 	        cs = conn.prepareCall("{ call [User.Session].[CreateSession](?, ?, ?)}");
