@@ -2,9 +2,11 @@ package edu.ucsf.ctsi.r2r.jena;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.jena.rdf.model.Model;
@@ -16,7 +18,7 @@ import com.google.inject.name.Named;
 import edu.ucsf.ctsi.r2r.DBUtil;
 import edu.ucsf.ctsi.r2r.R2ROntology;
 
-public class DbService implements ModelService, RDFXMLService, ResourceService {
+public class DbService implements ModelService, RDFXMLService, ResourceService, DecryptionService {
 
 	private static final Logger LOG = Logger.getLogger(DbService.class.getName());
 	
@@ -78,6 +80,27 @@ public class DbService implements ModelService, RDFXMLService, ResourceService {
 		}
 	}
 	
+	public String decryptEmail(String emailEncrypted) throws Exception {
+		Connection conn = dbUtil.getConnection();
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT [Utility.Application].[fnDecryptBase64RC4] ( '" + emailEncrypted + "',   (Select [value] from [Framework.].parameter with(nolock) where ParameterID = 'RC4EncryptionKey'))");
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				return rs.getString(1);
+			}
+			
+		}
+		catch (SQLException se) {
+	        LOG.log(Level.SEVERE, "Error decrpting email " + emailEncrypted, se);
+		}
+		finally {
+			try { conn.close(); } catch (SQLException se) {
+		        LOG.log(Level.SEVERE, "Error closing connection", se);
+			}
+		}
+		return null;
+	}
+
 	private Integer getNodeId(String uri) {
 		if (uri.toLowerCase().startsWith(systemBase)) {
 			return Integer.parseInt(uri.split(systemBase)[1]);

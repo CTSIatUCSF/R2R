@@ -36,19 +36,22 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 	private static final Logger LOG = Logger.getLogger(FusekiCache.class.getName());
 	
 	private static final String EXPIRED_TEMPLATE = "SELECT ?ac ?ts WHERE { <%s> <" + R2R_ADDED_TO_CACHE + "> ?ac. <%s> <" + RDF_TYPE + "> ?ts}";
+	private static final String EMAIL_ENCRYPTED_TEMPLATE = "SELECT ?ee WHERE { <%s> <" + PRNS_EMAIL_ENCRYPTED + "> ?ee}";
 	private static final String EXPIRED_ASK_TEMPLATE = "ASK { <%1$s> <" + R2R_ADDED_TO_CACHE + "> ?ac. FILTER(?ac > \"%2$s\") }";
 	
 	private SparqlQueryClient sparqlQueryClient;
 	private SparqlPostClient fusekiClient;
 	private RDFXMLService rdfxmlService;
+	private DecryptionService decryptionService;
 	private Map<String, Integer> expirationHours = new HashMap<String, Integer>();
 	private final Integer defaultExpirationHours;
 		
 	@Inject
-	public FusekiCache(SparqlQueryClient sparqlQueryClient, SparqlPostClient fusekiClient, RDFXMLService rdfxmlService) throws Exception {
+	public FusekiCache(SparqlQueryClient sparqlQueryClient, SparqlPostClient fusekiClient, RDFXMLService rdfxmlService, DecryptionService decryptionService) throws Exception {
 		this.sparqlQueryClient = sparqlQueryClient;
 		this.fusekiClient = fusekiClient;
 		this.rdfxmlService = rdfxmlService;
+		this.decryptionService = decryptionService;
 		
 		// add the model to the cache
 		fusekiClient.add(R2ROntology.createR2ROntModel());
@@ -98,6 +101,13 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		sparqlQueryClient.select(String.format(EXPIRED_TEMPLATE, uri, uri), consumer);
 		return consumer.getHasExpired();
 	}
+	
+	private String getEncyptedEmail(String uri) throws Exception {
+		//return sparqlQueryClient.ask(String.format(EXPIRED_ASK_TEMPLATE, uri, uri));
+		EmailEncryptedResultSetConsumer consumer = new EmailEncryptedResultSetConsumer();
+		sparqlQueryClient.select(String.format(EMAIL_ENCRYPTED_TEMPLATE, uri), consumer);
+		return consumer.getEmailEncrypted();
+	}
 
 	// we return either a Model or a byte[] because its more efficient to let clients transform if and when necessary
 	private Object getFreshItem(String rdfUrl, String uri) throws Exception  {
@@ -132,6 +142,13 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		byte[] body = rdfxmlService.getRDFXML(rdfUrl);
 		if (body != null) {
 			fusekiClient.add(body);
+			
+			// see if we need to decrypt email
+			String emailEncrypted = getEncyptedEmail(uri);
+			if (emailEncrypted != null) {
+				fusekiClient.update("INSERT { <" + uri + "> <" + VIVO_EMAIL + "> \"" + decryptionService.decryptEmail(emailEncrypted) + "\"} WHERE {}");
+			}
+						
 			// now add the timestamp
 			fusekiClient.update("PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>" + 
 					"INSERT { <" + uri + "> <" + R2R_ADDED_TO_CACHE + "> ?typedDate} WHERE {BIND (xsd:dateTime(\"" + 
@@ -225,7 +242,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			String fusekiURL = "http://localhost:3030/profiles";
 			FusekiCache userCache = new FusekiCache(new SparqlQueryClient(fusekiURL + "/query"),
 					new SparqlPostClient(fusekiURL + "/update", fusekiURL + "/data?default"), 
-					null);//new DbService(systemDomain, orngUser, dbUtil));			// get these first
+					null, null);//new DbService(systemDomain, orngUser, dbUtil));			// get these first
 			userCache.getResource("http://stage-profiles.ucsf.edu/profiles260/profile/41510337");
 //			SparqlQueryClient sq = new SparqlQueryClient("http://localhost:3030/profiles/query");
 //			SparqlPostClient fs = new SparqlPostClient("http://localhost:3030/profiles/update", "http://localhost:3030/profiles/data?default");
@@ -266,4 +283,21 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 		}		
 	}
 
+	private class EmailEncryptedResultSetConsumer implements ResultSetConsumer {
+		private String emailEncrypted;
+		
+		public void useResultSet(ResultSet rs) {
+			while (rs.hasNext()) {
+				QuerySolution qs = rs.next();
+				if (qs.contains("?ee")) {
+					emailEncrypted = qs.getLiteral("?ee").getString();
+					break;
+				}
+			}				
+		}	
+		
+		public String getEmailEncrypted() {
+			return emailEncrypted;
+		}		
+	}
 }

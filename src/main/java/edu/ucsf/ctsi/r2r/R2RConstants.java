@@ -38,9 +38,11 @@ public interface R2RConstants {
 	static final String VIVO_PMCID = VIVO + "pmcid";
 	static final String VIVO_PREFERRED_TITLE = VIVO + "preferredTitle";			
 	static final String VIVO_ORCID_ID = VIVO + "orcidId";
+	static final String VIVO_EMAIL = VIVO + "email";
 
 	static final String PRNS_PREFIX = "prns";
 	static final String PRNS = "http://profiles.catalyst.harvard.edu/ontology/prns#";
+	static final String PRNS_EMAIL_ENCRYPTED = PRNS + "emailEncrypted";
 //	static final String PRNS_LATITUDE = PRNS + "latitude";
 //	static final String PRNS_LONGITUDE = PRNS + "longitude";
 	
