@@ -80,10 +80,10 @@ public class DbService implements ModelService, RDFXMLService, ResourceService, 
 		}
 	}
 	
-	public String decryptEmail(String emailEncrypted) throws Exception {
+	public String decrypt(String encrypted) throws Exception {
 		Connection conn = dbUtil.getConnection();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT [Utility.Application].[fnDecryptBase64RC4] ( '" + emailEncrypted + "',   (Select [value] from [Framework.].parameter with(nolock) where ParameterID = 'RC4EncryptionKey'))");
+			PreparedStatement ps = conn.prepareStatement("SELECT [Utility.Application].[fnDecryptBase64RC4] ( '" + encrypted + "',   (Select [value] from [Framework.].parameter with(nolock) where ParameterID = 'RC4EncryptionKey'))");
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				return rs.getString(1);
@@ -91,7 +91,7 @@ public class DbService implements ModelService, RDFXMLService, ResourceService, 
 			
 		}
 		catch (SQLException se) {
-	        LOG.log(Level.SEVERE, "Error decrpting email " + emailEncrypted, se);
+	        LOG.log(Level.SEVERE, "Error decrpting " + encrypted, se);
 		}
 		finally {
 			try { conn.close(); } catch (SQLException se) {

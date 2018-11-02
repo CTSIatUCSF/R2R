@@ -146,7 +146,7 @@ public class FusekiCache implements ModelService, RDFXMLService, ResourceService
 			// see if we need to decrypt email
 			String emailEncrypted = getEncyptedEmail(uri);
 			if (emailEncrypted != null) {
-				fusekiClient.update("INSERT { <" + uri + "> <" + VIVO_EMAIL + "> \"" + decryptionService.decryptEmail(emailEncrypted) + "\"} WHERE {}");
+				fusekiClient.update("INSERT { <" + uri + "> <" + VIVO_EMAIL + "> \"" + decryptionService.decrypt(emailEncrypted) + "\"} WHERE {}");
 			}
 						
 			// now add the timestamp
