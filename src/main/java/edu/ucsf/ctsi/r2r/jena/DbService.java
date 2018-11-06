@@ -118,10 +118,11 @@ public class DbService implements ModelService, RDFXMLService, ResourceService, 
 	        int userId = cs.getInt(2);
 	        cs.close();
 	        
-	        cs = conn.prepareCall("{ call [User.Session].[CreateSession](?, ?, ?)}");
-	        cs.setString(1, "127.0.0.1");
-	        cs.setString(2, "ORNG");
-	        cs.setInt(3, userId);
+	        cs = conn.prepareCall("{ call [User.Session].[CreateSession](?, ?, ?, ?)}");
+	        cs.setString(1, "127.0.0.1"); // IP
+	        cs.setString(2, "localhost"); // hostname
+	        cs.setString(3, "ORNG"); // useragent
+	        cs.setInt(4, userId); // user id 
 	        ResultSet rs = cs.executeQuery();
 	        if (rs.next()) {
 	        	return rs.getString(1);
